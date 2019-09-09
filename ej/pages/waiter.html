@@ -11,7 +11,7 @@
 	}
 	.table td {
 		border: 1px solid #ccc;
-		line-height: 3em;
+		line-height: 2.5em;
 	}
 	.table td>a{
 		color: #1890FF;
@@ -145,6 +145,8 @@ $('#cover_sub').click(function(event){
 	var photo = $('input[name=photo]').val();
 	var passwd = $('input[name=passwd]').val();	
 	var url = baseURL+"/waiter/insertWaiter";
+	var url1 = baseURL + "/waiter/updateWaiter";
+
  	var data ={
 		id:id,
 		password:passwd,
@@ -152,11 +154,18 @@ $('#cover_sub').click(function(event){
 		telephone:telephone,
 		photo:photo
 	};
-    
-	$.post(url,data,function(a,b){
-		alert('添加成功！');
-		reloadData();
-	});
+    if(id){
+	    $.post(url1,data,function(){
+			alert('修改成功！');
+			reloadData();
+		});	
+    }else{
+    	$.post(url,data,function(){
+			alert('添加成功！');
+			reloadData();
+		});	
+    }
+	
 	$('#cover input').val("");
 	reloadData();
 	event.preventDefault();
@@ -253,7 +262,7 @@ tbody.onclick = function(event){
 				document.querySelector("input[name=id]").value = id;
 				document.querySelector("input[name=photo]").value = photo;
 				document.querySelector("input[name=passwd]").value = passwd;
-           
+                
 				break;
 		}
 	}

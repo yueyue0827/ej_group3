@@ -1,0 +1,345 @@
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1395175_1ollg2j9v9s.css">
+<style>
+	.table {
+		border-collapse: collapse;
+		width: 100%;
+		text-align: center;
+		font-size: 16px;
+	}
+	.table>thead{
+		background-color: #F2F2F2;
+	}
+	.table td {
+		border: 1px solid #ccc;
+		line-height: 3em;
+	}
+	.table td>a{
+		color: #1890FF;
+		margin-left: 10px;
+		font-size: 14px;
+	}
+	.table tr.current {
+		background-color: #E7F6FE;
+	}
+	.none {
+		display: none;
+	}
+	.btn {
+		padding: .5em 1.5em;
+		border-radius: 3px;
+		color: #333;
+		font-size: 14px;
+		border:1px solid #ccc;
+		cursor: pointer;
+		display: inline-block;
+	}
+	.btns {
+		margin-bottom: 1em;
+	}
+	#btn_search{
+		float: right;
+		border:0; 
+	}
+	#btn_search>input{
+		width: 200px;
+		height: 30px;
+		border:1px solid #ccc;
+		border-radius: 5px;
+	}
+	/*层罩*/
+	#cover{
+		display: none;
+		position: absolute;
+		background-color: rgba(0,0,0,0.4);
+		width: 120%;
+		height: 103%;
+		 top: -20px;
+		left:-100px; 
+	}
+    #cover>.cover_inner{
+    	position: absolute;
+    	left:0;
+    	right: 0;
+    	top: 0;
+    	bottom: 0;
+    	margin: auto;
+    	width: 500px;
+    	height: 450px;
+    	border-radius: 10px;
+    	background-color: #fff;
+    }
+    #cover>.cover_inner>div:first-child{
+    	height: 60px;
+    	line-height: 60px;
+    	font-size: 17px;
+    	padding: 0 20px 0 30px;
+    	border-bottom: 1px solid #ccc;
+    }
+    #cover>.cover_inner>div:first-child>i{
+    	float: right;
+    	color: #86919D;
+    	cursor: pointer;
+    }
+    #cover>.cover_inner .cover_inner_td1{
+    	padding-left: 20px;
+    	width: 80px;
+		font-size: 16px;
+		height: 60px;
+		line-height: 60px;
+    }
+    #cover>.cover_inner .cover_inner_input>input{
+    	width: 330px;
+        height: 30px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    #cover>.cover_inner .cover_inner_input>input:hover,.cover_btns:hover{
+    	color: #79ADF0;
+    	box-shadow: 0 0 5px #79ADF0;
+    }
+    #cover>.cover_inner>form>div:last-child{
+    	border-top: 1px solid #ccc;
+    	margin-top: 60px;
+    	padding-top: 25px;
+    	padding-left: 300px;
+    }
+    #cover>.cover_inner .cover_btns{
+    	display: inline-block;
+    	font-size: 16px;
+    	padding: 5px 20px;
+    	border:1px solid #ccc;
+    	border-radius: 4px;
+    	margin-left: 15px;
+    	cursor: pointer;
+    }
+    #cover>.cover_inner .cover_btns:last-child{
+    	background-color: #1890FF;
+    	color: #fff;
+    }
+</style>
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<script>
+$.ajaxSetup({
+		timeout:1000,
+		error:function(error){
+			alert("出现错误了！");
+			console.log(error);
+		},
+		complete:function(){
+			console.log("---------");
+		}
+	})
+ var baseURL = "http://134.175.154.93:6677";
+
+ $("#btn_add").click(function(){
+ 	$('#cover').css('display','block');
+ })
+ $('.cover_btns,.icon-quxiao1').click(function(){
+ 	$('#cover').css('display','none');
+ })
+ // 添加表单
+$('#cover_sub').click(function(event){
+	var id = $('input[name=id]').val();
+	var realname = $('input[name=realname]').val();
+	var telephone = $('input[name=telephone]').val();
+	var photo = $('input[name=photo]').val();
+	var passwd = $('input[name=passwd]').val();	
+	var url = baseURL+"/waiter/insertWaiter";
+ 	var data ={
+		id:id,
+		password:passwd,
+		realname:realname,
+		telephone:telephone,
+		photo:photo
+	};
+    
+	$.post(url,data,function(a,b){
+		alert('添加成功！');
+		reloadData();
+	});
+	$('#cover input').val("");
+	reloadData();
+	event.preventDefault();
+})
+
+//批量删除
+$('#btn_import').click(function(){
+	
+    var ids =[];
+    var check = $("input:checkbox:checked");
+    check.each(function(){
+    	ids.push(this.value);
+    })
+   	console.log(ids)
+   	var arr=[];
+   	ids.forEach(function (item,index){
+   		arr.push(parseInt(item));
+   	})
+   	console.log(arr)
+   	arr.forEach(function (item,index){
+   		var url = baseURL+"/waiter/deleteWaiterById?id=";
+   		url=url+item;
+   		console.log(url)
+   		$.get(url,function(){
+   			reloadData();
+			console.log("删除成功")
+		}); 
+   	})   	
+})
+
+
+// 当光标移动的某一行上，为这一行添加背景
+var tbody = document.getElementById("tbody");
+		tbody.onmouseover = function(event){
+			var target = event.target;
+			if(target.nodeName === "TD"){
+				target.parentNode.className = "current"
+			}
+		}
+		tbody.onmouseout = function(event){
+			var target = event.target;
+			if(target.nodeName === "TD"){
+				target.parentNode.className = ""
+			}
+		}
+//id查询
+/*$('input[name=id_search]').keyup(function(){
+	if(event.keyCode==13){
+	var id = $(this).val();
+	var url = baseURL+"/waiter/findWaiterById";
+	var data = "id="+id;
+	var valu = $("input:checkbox")
+	alert(id);*/
+	/*valu.each(function(item){
+		var check_id = item; 
+		alert(check_id.val())
+
+	})*/
+/*	$.get(url,data,function(a){
+		//alert($("id").not(this))
+		if(check_id.val() == id){
+			//valu.siblings().css("display","none");
+			alert(check_id.val())
+		}
+	})*//*
+	}
+})*/
+
+//给删除按钮绑定		
+tbody.onclick = function(event){
+	if(event.target.nodeName === "A"){
+		switch(event.target.className){
+			case "btn_del":
+				// 1. 先获取要删除的id
+				var id = event.target.parentNode.parentNode.firstElementChild.firstElementChild.value;
+				// 2. 编写ajax进行删除
+				var url = baseURL+"/waiter/deleteWaiterById";
+				var data = "id="+id;
+				$.get(url,data,function(response,status){
+					alert("删除成功！");
+					reloadData();
+				});
+				break;
+			case "btn_upd":
+				var id = event.target.parentNode.parentNode.children[0].firstElementChild.value;
+				var realname = event.target.parentNode.parentNode.children[1].innerText;
+				var telephone = event.target.parentNode.parentNode.children[3].innerText;
+				var photo = event.target.parentNode.parentNode.children[4].innerText;
+				var passwd =event.target.parentNode.parentNode.children[3].innerText;
+				$('#cover').css('display','block');
+
+				document.querySelector("input[name=realname]").value = realname;
+				document.querySelector("input[name=telephone]").value = telephone;
+				document.querySelector("input[name=id]").value = id;
+				document.querySelector("input[name=photo]").value = photo;
+				document.querySelector("input[name=passwd]").value = passwd;
+           
+				break;
+		}
+	}
+}
+
+
+// 加载数据
+function reloadData(){
+	var url = baseURL+"/waiter/findAllWaiter";
+	$.get(url,function(response,status){
+		//1. 将tbody清空
+		$("#waiter_tbl tbody").empty();
+		//2. 追加新的值
+		response.data.forEach(function(item){
+			var newTr = $(`<tr>
+				<td><input type="checkbox" value="`+item.id+`" class="check"></td>
+				<td>`+item.realname+`</td>
+				<td>`+item.status+`</td>
+				<td>`+item.telephone+`</td>
+				<td>`+item.photo+`</td>
+				<td>
+					<a class="btn_del" href="#">删 除</a>
+					<a class="btn_upd" href="#">修 改</a>
+				</td>
+			</tr>`);
+			$("#waiter_tbl").append(newTr)
+		});
+	});
+}
+
+// 文档加载完毕之后执行
+$(function(){
+	//调用重载数据
+	reloadData();
+})
+</script>	
+<div class="waiter">
+	<div class="btns">
+		<div id="btn_add" class="btn">添加</div>
+		<div id="btn_import" class="btn">批量删除</div>
+		<div id="btn_search"><input type="text" placeholder="请输入id..." name="id_search"></div>
+	</div>
+	<table class="table" id="waiter_tbl">
+		<thead>
+			<tr>
+				<td width="80px">编号</td>
+				<td>姓名</td>
+				<td>状态</td>
+				<td>手机号</td>
+				<td>照片</td>
+				<td>操作</td>
+			</tr>
+		</thead>
+		<tbody id="tbody">
+			
+		</tbody>
+	</table>
+</div>
+<!-- 添加层罩 -->
+ <div id="cover">
+    <div class="cover_inner">
+    	<div>更新服务员信息 <i class="iconfont icon-quxiao1"></i></div>
+    	<form action="javascript:void(0)">
+    	<input type="hidden" name="id">
+		<table>
+			<tr>
+				<td class="cover_inner_td1">姓名</td>
+				<td class="cover_inner_input"><input type="text" name="realname"></td>
+			</tr>
+			<tr>
+				<td class="cover_inner_td1">手机号</td>
+				<td class="cover_inner_input"><input type="text" name="telephone"></td>
+			</tr>
+			<tr>
+				<td class="cover_inner_td1">密码</td>
+				<td class="cover_inner_input"><input type="password" name="passwd"></td>
+			</tr>
+			<tr>
+				<td class="cover_inner_td1">照片</td>
+				<td class="cover_inner_input"><input type="text" name="photo"></td>
+			</tr>
+		</table>
+    	<div>
+			<div class="cover_btns">取消</div>
+			<div class="cover_btns" id="cover_sub">提交</div>
+    	</div>
+    	</form>
+    </div>
+</div>

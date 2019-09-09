@@ -1,0 +1,233 @@
+<style>
+	.table {
+		border-collapse: collapse;
+		width: 100%;
+		text-align: center;
+	}
+	.table td {
+		border: 1px solid #ccc;
+		line-height: 2em;
+	}
+	.table tr.current {
+		background-color: #ededed;
+	}
+	.none {
+		display: none;
+	}
+	.btn {
+		padding: .5em 1em;
+		border-radius: 3px;
+		color: #333;
+		border:1px solid #ccc;
+		cursor: pointer;
+		display: inline-block;
+	}
+	.btns {
+		margin-bottom: .5em;
+	}
+	input{
+		width: 60px;
+		margin: 3px 5px;
+	}
+	
+</style>
+
+<script>
+	//加载数据
+	var baseURL=" http://134.175.154.93:6677";
+	function reloadData(){
+		var url=baseURL+"/orderLine/findAllOrderLine";
+		$.get(url,function(response,status){
+			//将tbody清空
+			$("#orderline_tbl tbody").empty();
+			//追加新的值
+			response.data.forEach(function(item){
+				var newTr=$(`<tr>
+				<td><input type="checkbox" value="`+item.id+`"></td>
+				<td>`+item.orderId+`</td>
+				<td>`+item.productId+`</td>
+				<td>`+item.number+`</td>
+				<td>
+					<a class="btn_del" href="#">删除</a>
+					<a class="btn_upd" href="#">修改</a>
+				</td>
+			</tr>`);
+				$("#orderline_tbl").append(newTr)
+			});
+		});
+	}
+	//文档加载完毕后执行
+	$(function(){
+		reloadData();
+	})
+
+
+	//为表单绑定事件
+	 var tbody = document.getElementsByTagName("tbody")[0];
+	 var btn_add = document.getElementById("btn_add");
+	 document.forms[0].onsubmit=function(event){
+	 	//获取用户输入
+	 	var id=document.querySelector("input[name=id]").value;
+	 	var orderId=document.querySelector("input[name=orderId]").value;
+	 	var productId=document.querySelector("input[name=productId]").value;
+	 	var number=document.querySelector("input[name=number]").value;
+
+	 	var url=baseURL+"/orderLine/insertOrderLine";
+
+
+		var data ;
+		if(id){
+			data = "id="+id+"&orderId="+orderId+"&productId="+productId+"&number"+number;
+		} else {
+			data = "orderId="+orderId+"&productId="+productId+"&number"+number;
+		}
+			
+	 	// var data={
+	 	// 	id:id,
+	 	// 	orderId:orderId,
+	 	// 	productId:productId,
+	 	// 	number:number
+	 	// };
+	 	$.post(url,data,function(a,b){
+	 		alert(a.message);
+	 		reloadData();
+	 	});
+	 	event.preventDefault();
+	 }
+
+	 //给添加按钮绑定事件
+	 btn_add.onclick=function(){
+	 	document.querySelector("input[name=orderId]").value="";
+	 	document.querySelector("input[name=productId]").value="";
+	 	document.querySelector("input[name=number]").value="";
+	 	document.querySelector("input[name=id]").value="";
+
+	 }
+
+
+
+
+
+
+	 	//当光标移到某一行上，为这一行添加背景
+		 tbody.onmouseover = function(event){
+		 	var target=event.target;
+		 	if (target.nodeName === "TD") {
+		 		target.parentNode.className ="current"
+		 	}
+		 }
+		 tbody.onmouseout = function(event){
+		 	var target=event.target;
+		 	if (target.nodeName === "TD") {
+		 		target.parentNode.className =""
+		 	}
+		 }
+
+	
+
+	//操作删除时删除订单
+	
+	    tbody.onclick=function(event){
+		if(event.target.nodeName==="A"){
+			switch(event.target.className){
+				case "btn_del":
+				//1、现获取要删除的id
+				
+				var id=event.target.parentNode.parentNode.firstElementChild.firstElementChild.value;
+				var url=baseURL+"/orderLine/deleteOrderLineById";
+				var data="id="+id;
+				$.post(url,data,function(response,status){
+					alert(response.message);
+					reloadData();
+
+				});
+				break;
+				case "btn_upd":
+				   var data ;
+					if(id){
+						data = "id="+id+"&orderId="+orderId+"&productId="+productId+"&number"+number;
+					} else {
+						data = "orderId="+orderId+"&productId="+productId+"&number"+number;
+					}
+				    var url=baseURL+"/orderLine/updateOrderLinePrimaryKey";
+				    //var data="id="+id;
+				    $.post(url,data,function(response,status){
+				    	alert(response.message);
+				    	reloadData();
+				    });
+		        	var id = event.target.parentNode.parentNode.children[0].firstElementChild.value;
+					var orderId = event.target.parentNode.parentNode.children[1].innerText;
+					var productId = event.target.parentNode.parentNode.children[2].innerText;
+					var number = event.target.parentNode.parentNode.children[3].innerText;
+
+					document.querySelector("input[name=orderId]").value = orderId;
+					document.querySelector("input[name=productId]").value = productId;
+					document.querySelector("input[name=number]").value = number;
+					document.querySelector("input[name=id]").value = id;
+			    break;
+			}			
+		}
+	}
+
+	//批量删除
+	$("#btn_import").click(function(){
+		var ids=[];
+		var check=$("input:checkbox:checked");
+		check.each(function(){
+			ids.push(this.value);
+		})
+		console.log(ids);
+		var arr=[];
+		ids.forEach(function(item,idex){
+			arr.push(parseInt(item));
+		})
+		console.log(arr);
+		arr.forEach(function(item,index){
+			var url=baseURL+"/orderLine/deleteOrderLineById?id=";
+			url=url+item;
+			console.log(url);
+			var data = ids;
+			$.post(url,data,function(response,status){
+					//alert(response.message);
+					reloadData();
+					console.log("删除成功");
+				});
+		})
+	})
+</script>
+
+
+<div class="orderline">
+		<div class="btns">
+			<div id="btn_add" class="btn">添加</div>
+			<div id="btn_import" class="btn">批量删除</div>
+		</div>
+		
+		<div style="margin-bottom: .5em">
+			<!-- 表单 -->
+			<form action="javascript:void(0)">
+				<input type="hidden" name="id" />
+				订单号<input type="text" name="orderId"/>
+				产品号<input type="text" name="productId">
+				订单数量<input type="text" name="number">	
+				<input type="submit" value="提交">
+			</form>
+		</div>
+
+		<table class="table" id="orderline_tbl">
+			<thead>
+				<tr>
+					<td width="80px">id</td>
+					<td>订单号</td>
+					<td>产品号</td>
+					<td>订单数量</td>
+					
+					<td width="100px">操作</td>
+				</tr>
+			</thead>
+		<tbody>
+			
+		</tbody>
+		
+</div>
+

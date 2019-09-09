@@ -13,6 +13,9 @@
 		border: 1px solid #ccc;
 		line-height: 2.5em;
 	}
+	.table td:last-child{
+		width: 200px;
+	}
 	.table td>a{
 		color: #1890FF;
 		margin-left: 10px;
@@ -51,10 +54,10 @@
 		display: none;
 		position: absolute;
 		background-color: rgba(0,0,0,0.4);
-		width: 120%;
-		height: 103%;
-		 top: -20px;
-		left:-100px; 
+		width: 100%;
+		height: 100%;
+		 top: 0px;
+		left:0px; 
 	}
     #cover>.cover_inner{
     	position: absolute;
@@ -93,7 +96,7 @@
         border-radius: 5px;
         border: 1px solid #ccc;
     }
-    #cover>.cover_inner .cover_inner_input>input:hover,.cover_btns:hover{
+    #cover>.cover_inner .cover_inner_input>input:hover,.cover_btns:hover,.btn:hover{
     	color: #79ADF0;
     	box-shadow: 0 0 5px #79ADF0;
     }
@@ -116,6 +119,10 @@
     	background-color: #1890FF;
     	color: #fff;
     }
+    .hide
+    {
+      display:none;
+    }
 </style>
 <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
 <script>
@@ -136,6 +143,14 @@ $.ajaxSetup({
  })
  $('.cover_btns,.icon-quxiao1').click(function(){
  	$('#cover').css('display','none');
+ })
+ $('input').focus(function(){
+     $(this).css('color','#79ADF0');
+    $(this).css('box-shadow',' 0 0 5px #79ADF0');
+ })
+  $('input').blur(function(){
+     $(this).css('color','');
+    $(this).css('box-shadow','');
  })
  // 添加表单
 $('#cover_sub').click(function(event){
@@ -211,28 +226,24 @@ var tbody = document.getElementById("tbody");
 				target.parentNode.className = ""
 			}
 		}
-//id查询
-/*$('input[name=id_search]').keyup(function(){
-	if(event.keyCode==13){
-	var id = $(this).val();
-	var url = baseURL+"/waiter/findWaiterById";
-	var data = "id="+id;
-	var valu = $("input:checkbox")
-	alert(id);*/
-	/*valu.each(function(item){
-		var check_id = item; 
-		alert(check_id.val())
 
-	})*/
-/*	$.get(url,data,function(a){
-		//alert($("id").not(this))
-		if(check_id.val() == id){
-			//valu.siblings().css("display","none");
-			alert(check_id.val())
-		}
-	})*//*
+
+//id查询
+$('input[name=id_search]').keyup(function(){
+	if(event.keyCode == 13){
+		var id = $(this).val();
+		var url = baseURL + "/waiter/findWaiterById";
+		var data = "id="+id
+		$.get(url,data,function(response,status){
+			if(response.status == 200){
+				alert('查询成功！');
+			}else{
+				alert('查询失败！');
+			}
+		})
 	}
-})*/
+})
+
 
 //给删除按钮绑定		
 tbody.onclick = function(event){
@@ -286,6 +297,7 @@ function reloadData(){
 				<td>
 					<a class="btn_del" href="#">删 除</a>
 					<a class="btn_upd" href="#">修 改</a>
+					<a class="btn_upd" href="#">详 情</a>
 				</td>
 			</tr>`);
 			$("#waiter_tbl").append(newTr)
@@ -298,7 +310,39 @@ $(function(){
 	//调用重载数据
 	reloadData();
 })
+
+//上传图片
+ $("#photo").change(function(){
+    var objUrl = getObjectURL(this.files[0]) ;
+    console.log("objUrl = "+objUrl) ;
+    if (objUrl) 
+    {
+      $("#img0").attr("src", objUrl);
+      $("#img0").removeClass("hide");
+    }
+  }) ;
+  //建立一個可存取到該file的url
+  function getObjectURL(file) 
+  {
+    var url = null ;
+    if (window.createObjectURL!=undefined) 
+    { // basic
+      url = window.createObjectURL(file) ;
+    }
+    else if (window.URL!=undefined) 
+    {
+      // mozilla(firefox)
+      url = window.URL.createObjectURL(file) ;
+    } 
+    else if (window.webkitURL!=undefined) {
+      // webkit or chrome
+      url = window.webkitURL.createObjectURL(file) ;
+    }
+    return url ;
+  }
 </script>	
+
+
 <div class="waiter">
 	<div class="btns">
 		<div id="btn_add" class="btn">添加</div>
@@ -342,7 +386,8 @@ $(function(){
 			</tr>
 			<tr>
 				<td class="cover_inner_td1">照片</td>
-				<td class="cover_inner_input"><input type="text" name="photo"></td>
+				<!-- <td class="cover_inner_input"><input type="text" name="photo"></td> -->
+				 <td class="cover_inner_input"><input type="file" name="photo" id="photo" multiple="multiple"><img src="" id="img0" width="100" height="100" class="hide"></td>
 			</tr>
 		</table>
     	<div>

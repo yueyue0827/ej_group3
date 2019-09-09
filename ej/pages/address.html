@@ -1,6 +1,5 @@
 <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
-<link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1395175_1ollg2j9v9s.css">
 <style>
 .table {
 	border-collapse: collapse;
@@ -36,7 +35,7 @@
 		background-color: rgba(0,0,0,0.4);
 		width: 120%;
 		height: 103%;
-		 top: -20px;
+		top: -20px;
 		left:-100px; 
 	}
     #cover>.cover_inner{
@@ -47,7 +46,7 @@
     	bottom: 0;
     	margin: auto;
     	width: 500px;
-    	height: 450px;
+    	height: 520px;
     	border-radius: 10px;
     	background-color: #fff;
     }
@@ -66,9 +65,9 @@
     #cover>.cover_inner .cover_inner_td1{
     	padding-left: 20px;
     	width: 80px;
-		font-size: 16px;
-		height: 60px;
-		line-height: 60px;
+			font-size: 16px;
+			height: 60px;
+			line-height: 60px;
     }
     #cover>.cover_inner .cover_inner_input>input{
     	width: 330px;
@@ -118,8 +117,9 @@ function reloadData(){
 				<td>`+item.address+`</td>
 				<td>`+item.telephone+`</td>
 				<td>
-					<a class="btn_del" href="#">删除</a>
-					<a class="btn_upd" href="#">修改</a>
+					<a class="btn_del" href="javascript:void(0)">删除</a>
+					<a class="btn_upd" href="javascript:void(0)">修改</a>
+					<a class="btn_details" href="javascript:void(0)">详情</a>
 				</td>
 			</tr>`)
 			$("#address_tbl").append(newTr)
@@ -130,25 +130,91 @@ function reloadData(){
 $(function(){
 	//调用重载数据
 	reloadData();
-	$("#btn_add").on("click",function(){
-		$("")
-	})
-	$("tbody").on("click","a",function(event){
-		switch(event.target.className){
+	$("#address_tbl").on("click","a",function(event){
+		switch(this.className){
 			case "btn_del":
-				var id = event.target.parentNode.parentNode.firstElementChild.firstElementChild.value
-				var url = baseURL+"/address/deleteAddressById"
-				var data = "id="+id
-				$.post(url,data,function(response,statusText){
-					console.log(response.message)
-					// alert(response.message)
-					reloadData()
-				})
+				// 获取当前行的id
+				var id = $(this).parents("tr").children().eq(0).find("input").val();
+				// 交互
+				var url = baseURL +"/address/deleteAddressById"
+				var data = {
+					id:id
+				}
+				$.post(url,data,function(result){
+					if(result.status === 200){
+						// 更新页面
+						reloadData();
+					} else {
+						alert(result.message);
+					}
+				});
 			break;
 			
 			case "btn_upd":
+				$("#cover").css("display","block")
+				var id = $(this).parents("tr").children().eq(0).find("input").val()
+				var province = $(this).parents("tr").children().eq(1).text()
+				var city = $(this).parents("tr").children().eq(2).text();
+				var area = $(this).parents("tr").children().eq(3).text();
+				var address = $(this).parents("tr").children().eq(4).text()
+				var telephone = $(this).parents("tr").children().eq(5).text()
+				$('input[name=address_id]').val(id)
+				$('input[name=province]').val(province)
+				$('input[name=city]').val(city)
+				$('input[name=area]').val(area)
+				$('input[name=address]').val(address)
+				$('input[name=telephone]').val(telephone)
+			break;
+			case "btn_details":
+				
 			break;
 		}
+		event.preventDefault();
+	})
+	// 为表当绑定事件，获取用户输入并传递给后台
+	$("#cover_sub").on("click",function(event){
+		console.log(event)
+		var id = $('input[name=address_id]').val()
+		var province = $('input[name=province]').val()
+		var city = $('input[name=city]').val()
+		var area = $('input[name=area]').val()
+		var address = $('input[name=address]').val()
+		var telephone = $('input[name=telephone]').val()
+		var url = baseURL+"/address/insertAddress" 
+		var url1 = baseURL+"/address/updateAddressPrimaryKey"
+		var data ={
+			id:id,
+			province:province,
+			city:city,
+			area:area,
+			address:address,
+			telephone:telephone
+		}
+		if(id){
+		  $.post(url1,data,function(){
+				alert('修改成功！');		
+				reloadData();
+			});	
+    }else{
+    	$.post(url,data,function(){
+				alert('添加成功！');
+				reloadData();
+		 	});	
+    }
+		event.preventDefault()
+	})
+	//为添加按钮绑定事件，点击添加按钮时，模态框中的数据清空
+	$("#btn_add").on("click",function(){
+		$("#cover").css("display","block")
+		$('input[name=address_id]').val("")
+		$('input[name=province]').val("")
+		$('input[name=city]').val("")
+		$('input[name=area]').val("")
+		$('input[name=address]').val("")
+		$('input[name=telephone]').val("")
+	})
+	$(".cover_btns").on("click",function(){
+		$("#cover").css("display","none")
 	})
 	//批量删除
 	$('#btn_delete').click(function(){
@@ -174,56 +240,9 @@ $(function(){
 			})
 		})   	
 	})
-	// 为表当绑定事件，获取用户输入并传递给后台
-	$(".btn-primary").on("click",function(event){
-		console.log(event)
-		var id = $('input[name=address_id]').val()
-		var province = $('select[name=input_province] option').val()
-		var city = $('select[name=input_city] option').val()
-		var area = $('select[name=input_area] option').val()
-		var address = $('input[name=address]').val()
-		var telephone = $('input[name=telephone]').val()
-
-		alert(province)
-		var url = baseURL+"/address/insertAddress" 
-		var data ={
-			id:id,
-			province:province,
-			city:city,
-			area:area,
-			address:address,
-			telephone:telephone
-		}
 	
-		$.post(url,data,function(response,statusText){
-			console.log(statusText)
-			reloadData()
-		})
-		event.preventDefault()
-	})
-	//为添加按钮绑定事件，点击添加按钮时，模态框中的数据清空
-	$("#btn_add").on("click",function(){
-		$('input[name=address_id]').val() = ""
-		$('select[name=input_province] option').val() = ""
-		$('select[name=input_city] option').val() = ""
-		$('select[name=input_area] option').val() = ""
-		$('input[name=address]').val() = ""
-		$('input[name=telephone]').val() = ""
-	})
 	// 当光标移动的某一行上，为这一行添加背景
-	var tbody = document.getElementById("tbody");
-		tbody.onmouseover = function(event){
-			var target = event.target;
-			if(target.nodeName === "TD"){
-				target.parentNode.className = "current"
-			}
-		}
-		tbody.onmouseout = function(event){
-			var target = event.target;
-			if(target.nodeName === "TD"){
-				target.parentNode.className = ""
-			}
-		}
+
 	//id查询
 	$('input[name=address_id]').keyup(function(){
 		if(event.keyCode==13){
@@ -236,11 +255,6 @@ $(function(){
 				alert(check_id.val())
 			})
 			$.get(url,data,function(a){
-				//alert($("id").not(this))
-				/*if(check_id.val() == id){
-					/alu.siblings().css("display","none");
-					alert(check_id.val())
-				}*/
 			})
 		}
 	})
@@ -248,7 +262,6 @@ $(function(){
 
 </script>
 
-<!-- 三级联动 begin -->
 
 <div class="address">
 	<div class="btns">
@@ -262,20 +275,24 @@ $(function(){
     	<input type="hidden" name="id">
 		<table>
 			<tr>
-				<td class="cover_inner_td1">姓名</td>
-				<td class="cover_inner_input"><input type="text" name="realname"></td>
+				<td class="cover_inner_td1">省份：</td>
+				<td class="cover_inner_input"><input type="text" name="province"></td>
 			</tr>
 			<tr>
-				<td class="cover_inner_td1">手机号</td>
+				<td class="cover_inner_td1">城市：</td>
+				<td class="cover_inner_input"><input type="text" name="city"></td>
+			</tr>
+			<tr>
+				<td class="cover_inner_td1">地区：</td>
+				<td class="cover_inner_input"><input type="text" name="area"></td>
+			</tr>
+			<tr>
+				<td class="cover_inner_td1">地址：</td>
+				<td class="cover_inner_input"><input type="text" name="address"></td>
+			</tr>
+			<tr>
+				<td class="cover_inner_td1">电话：</td>
 				<td class="cover_inner_input"><input type="text" name="telephone"></td>
-			</tr>
-			<tr>
-				<td class="cover_inner_td1">密码</td>
-				<td class="cover_inner_input"><input type="password" name="passwd"></td>
-			</tr>
-			<tr>
-				<td class="cover_inner_td1">照片</td>
-				<td class="cover_inner_input"><input type="text" name="photo"></td>
 			</tr>
 		</table>
     	<div>
@@ -292,13 +309,13 @@ $(function(){
 	<table class="table" id="address_tbl">
 		<thead>
 			<tr>
-				<td width="80px">编号</td>
+				<td width="100px">编号</td>
 				<td>省份</td>
 				<td>城市</td>
 				<td>地区</td>
 				<td>地址</td>
 				<td>电话</td>
-				<td width="100px">操作</td>
+				<td width="180px">操作</td>
 			</tr>
 		</thead>
 		<tbody>
